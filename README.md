@@ -8,7 +8,7 @@ This repository contains a mobile application designed to streamline the managem
 - **Payout Management**: Track and manage associate payouts.
 
 ## Technologies
-- **Frontend**: React
+- **Frontend**: React, Expo (for mobile development)
 - **Backend**: Node.js, Express
 - **Database**: MongoDB (or relevant database)
 - **Authentication**: JWT-based user authentication
@@ -31,13 +31,17 @@ npm install
 cd ../frontend
 npm install
 ```
-5. Start the backend server:
+5. Install dependencies for Expo:
+```bash
+npm install --global expo-cli
+```
+6. Start the backend server:
 ```bash
 npm start
 ```
-6. Start the frontend server:
+7. Start the frontend server:
 ```bash
-npm start
+expo start
 ```
 ## Usage
 1. Register a new user or log in with existing credentials.
