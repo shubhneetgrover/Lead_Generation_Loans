@@ -1,0 +1,110 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+const cors = require('cors');
+
+// Initialize Express app
+const app = express();
+
+// Middleware
+app.use(bodyParser.json(),cors());
+
+// Connect to the MongoDB database
+mongoose.connect('mongodb://localhost:27017/myapp', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+// Register route
+app.post('/register', async (req, res) => {
+  try {
+    const {
+      name,
+      fatherName,
+      dateOfBirth,
+      address,
+      mobileNo,
+      email,
+      panCardNo,
+      aadhaarCardNo,
+      bankName,
+      accountNo,
+      ifscCode,
+      gstNo,
+      relationshipManagerCode,
+      password,
+    } = req.body;
+    console.log(req.body);
+
+
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email already exists' });
+    }
+    console.log(User);
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password || '', 10);
+
+    // Create a new user object
+    const newUser = new User({
+      name,
+      fatherName,
+      dateOfBirth,
+      address,
+      mobileNo,
+      email,
+      panCardNo,
+      aadhaarCardNo,
+      bankName,
+      accountNo,
+      ifscCode,
+      gstNo,
+      relationshipManagerCode,
+      password: hashedPassword,
+    });
+
+    // Save the user to the database
+    await newUser.save();
+
+    res.status(201).json({ message: 'Registration successful' });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred', error });
+  }
+});
+
+// Login route
+app.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Compare the provided password with the stored password
+    const passwordMatch = await bcrypt.compare(password || '', user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ userId: user._id }, 'secretKey');
+
+    res.status(200).json({ message: 'Login successful', token });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred', error });
+  }
+});
+
+// Start the server
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
